@@ -1,0 +1,3 @@
+---
+- import_playbook: tasks/basic_server_setup.yaml
+- import_playbook: tasks/setup_nvim.yaml

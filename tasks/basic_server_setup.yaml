@@ -1,0 +1,40 @@
+---
+- name: Install and setup zsh on remote server
+  hosts: all
+  become: yes  # become superuser to install packages and modify user shell
+
+  tasks:
+    - name: Install packages
+      package:
+        name:
+          - zsh
+          - golang
+          - tmux
+          - pip
+          - pipenv
+        state: present
+
+    - name: Install Oh My Zsh for user
+      become: no  # run as the ansible user
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) --unattended"
+      args:
+        creates: "~/.oh-my-zsh"  # This makes sure Oh My Zsh isn't reinstalled if it already exists
+      become_user: "{{ ansible_user }}"
+
+    - name: Set up zshrc
+      template:
+        src: .zshrc
+        dest: "~/.zshrc"
+      become_user: "{{ ansible_user }}"
+
+    - name: Change user shell to zsh
+      user:
+        name: "{{ ansible_user }}"
+        shell: /bin/zsh
+
+    - name: Enable mouse support in tmux
+      lineinfile:
+        path: "/home/{{ ansible_user }}/.tmux.conf"
+        line: 'set -g mouse on'
+        create: yes
+      become_user: "{{ ansible_user }}"

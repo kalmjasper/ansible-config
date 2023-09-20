@@ -1,0 +1,49 @@
+---
+- name: Setup Neovim with Vundle and plugins
+  hosts: all
+  become: yes
+  vars:
+    nvim_config_dir: "/home/{{ ansible_user }}/.config/nvim"
+    plugin_list:
+      - 'prabirshrestha/asyncomplete.vim'
+      - 'prabirshrestha/asyncomplete-lsp.vim'
+      - 'prabirshrestha/vim-lsp'
+      - 'preservim/nerdtree'
+      - 'vim-airline/vim-airline'
+      - 'vim-airline/vim-airline-themes'
+      - 'godlygeek/tabular'
+      - 'preservim/vim-markdown'
+      - 'lukas-reineke/indent-blankline.nvim'
+      - 'NLKNguyen/papercolor-theme'
+      
+  tasks:
+    - name: Ensure nvim is installed
+      package:
+        name: neovim
+        state: present
+
+    - name: Ensure nvim config directory exists
+      file:
+        path: "{{ nvim_config_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      become_user: "{{ ansible_user }}"
+
+    - name: Clone Vundle for nvim
+      git:
+        repo: 'https://github.com/VundleVim/Vundle.vim.git'
+        dest: "{{ nvim_config_dir }}/bundle/Vundle.vim"
+        version: master
+      become_user: "{{ ansible_user }}"
+
+    - name: Set up nvim with plugins
+      template:
+        src: init.vim
+        dest: "{{ nvim_config_dir }}/init.vim"
+      become_user: "{{ ansible_user }}"
+
+    - name: Install nvim plugins using Vundle
+      command:
+        cmd: nvim +PluginInstall +qall
+      become_user: "{{ ansible_user }}"
