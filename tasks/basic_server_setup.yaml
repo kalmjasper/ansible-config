@@ -12,6 +12,7 @@
           - tmux
           - pip
           - pipenv
+          - curl
         state: present
 
     - name: Install Oh My Zsh for user
